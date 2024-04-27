@@ -27,24 +27,23 @@ try:
     engine = create_engine(database_url)
 
     # Criar uma sessão para execução da procedure
-    #Session = sessionmaker(bind=engine)
-    #session = Session()
+    Session = sessionmaker(bind=engine)
+    session = Session()
     print("    #### Conexão estabelecida.")
 
     # Executar a procedure
     print("#### Inicio do processamento do ETL CARREGA_FUNCIONARIO.", datetime.datetime.now())
-    #cursor = session.connection().connection.cursor()
-    #cursor.callproc("CARREGA_FUNCIONARIO", [data_atual])
+    cursor = session.connection().connection.cursor()
+    cursor.callproc("CARREGA_FUNCIONARIO", [data_atual])
 
     # Fechar o cursor e a sessão
-    #cursor.close()
-    #session.close()
+    cursor.close()
+    session.close()
     print("    #### Processamento do ETL concluido.")
 
     # Consulta SQL para selecionar os dados da tabela, esses dados estarão contidos no arquivo parquet.
     print("#### Gerando o arquivo ",tab_func,".parquet ", datetime.datetime.now())
     condicao = "tenantid = 1"
-    #rows = f"SELECT * FROM {tab_func}"
     rows = f"SELECT * FROM {tab_func} WHERE {condicao}"
 
     # Pandas para ler os dados do banco de dados e transferi-los para um DataFrame
