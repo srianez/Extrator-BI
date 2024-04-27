@@ -1,0 +1,19 @@
+{
+	"databaseVendor":{
+		"vendor": "mysql",
+		"origin": "oracle+cx_oracle://ergonBI:ergonBI@54.233.134.92:1521/ergon",
+		"originMS": "mysql+mysqlconnector://ergonBI:bhimA.123456.@localhost:3306/ergonbi"
+	},
+	"tables":{
+		"func": "qs_funcionarios",
+		"freqAfast": "qs_freq_afast",
+		"pagtoCabec": "qs_pagamento_cabec",
+		"pagtoRubri": "qs_pagamento_rubricas"
+	},
+	"files":{
+		"fileFunc": "D:/Techne/Extrator-BI/qs_funcionarios.parquet",
+		"fileFreqAfast": "D:/Techne/Extrator-BI/qs_freq_afast.parquet",
+		"filePagtoCabec": "D:/Techne/Extrator-BI/qs_pagamento_cabec.parquet",
+		"filePagtoRubri": "D:/Techne/Extrator-BI/qs_pagamento_rubricas.parquet"
+	}	
+}
