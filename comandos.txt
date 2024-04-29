@@ -1,0 +1,9 @@
+pip install mysql-connector-python     
+pip install pandas sqlalchemy
+pip install cx_Oracle 
+pip install sqlalchemy   
+
+conda remove pathlib    
+
+git config --global user.name "srianez"
+git config --global user.email silaskt@yahoo.com.br
