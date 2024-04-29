@@ -9,11 +9,11 @@ class ExtrairFreqAfast:
     try:       
         def extrair_freq_afast(self, banco_oriem, diretorio_arquivo_parquet, tab_freqAfast, tenant_id):
             retorno = "ERRO"
-            # Obter a data atual
+            
             data_atual = datetime.datetime.now()
 
-            # Criando uma conexão com o banco de dados Oracle
-            print("#### Criando uma conexão com o banco de dados Oracle.")
+            # Criando uma conexão com o banco de dados
+            print("#### Criando uma conexão com o banco de dados.")
             engine = create_engine(banco_oriem)
 
             # Criar uma sessão para execução da procedure
@@ -30,7 +30,6 @@ class ExtrairFreqAfast:
             }            
             cursor.callproc("CARREGA_FREQ_AFAST", keywordParameters=params)
 
-            # Fechar o cursor e a sessão
             cursor.close()
             session.close()
             print("    #### Término do processamento do ETL CARREGA_FREQ_AFAST.", datetime.datetime.now())
@@ -50,9 +49,6 @@ class ExtrairFreqAfast:
             retorno = "SUCESSO"
             return retorno
         
-            # Executar o arquivo import.py
-            #subprocess.run(["python", "ImportFuncionarios.py"])
-
     except Exception as e:
         print("Ocorreu um erro no processamento da extração dos funcionários. Erro => :", e)
         
