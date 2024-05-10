@@ -1,67 +1,62 @@
 import json
 from ExtrairFuncionarios import ExtrairFuncionarios
 from ExtrairFreqAfast import ExtrairFreqAfast
+from sqlalchemy.orm import sessionmaker
 from Importador import Importador
+from AuditoriaProcessos import AuditoriaProcessos
 import datetime
+from sqlalchemy import create_engine
 
 
 class ProcessarETL:
     try:
-        def __init__(self):
-            tenant_id = 1
+        tenant_id = 2
 
-            with open('configs.json') as config_file:
-                config = json.load(config_file)
+        try:
+
+            #carrega as informações do arquivo de configurações
+            def carregar_configuracoes():
+                with open('configs.json') as config_file:
+                    return json.load(config_file)
+
+            #cria a conexão com o banco de dados
+            def conectar_banco(configuracoes):
+                conexao_banco = configuracoes['conexao_banco']['origem']
+                engine = create_engine(conexao_banco)
+                Session = sessionmaker(bind=engine)
+                return Session()
+            
+            configuracoes = carregar_configuracoes()
+            session = conectar_banco(configuracoes)
+
+            auditoria = AuditoriaProcessos()
+            id_exec = auditoria.gera_log_header(session, tenant_id)
+            auditoria.gera_log_detail(session, id_exec, "#### Início do processamento ####")
+
+            #processa funcionarios
+            extrator_func = ExtrairFuncionarios()            
+            status = extrator_func.extrair_funcionarios(session, configuracoes['conexao_banco']['origem'], configuracoes['arquivo']['arquivoFunc'], configuracoes['tabela']['func'], tenant_id, id_exec)    
+          
+            #importar o arquivo de funcionarios se sucesso
+            if status == "SUCESSO":
+                importador = Importador()
+                status = importador.importar_arquivo(configuracoes['conexao_banco']['destino'], configuracoes['arquivo']['arquivoFunc'], configuracoes['tabela']['func'], tenant_id, session, id_exec)
+
+        except Exception as exFunc:
+            print("Ocorreu um erro no processamento do ETL de Funcionários. Erro => :", exFunc)    
         
-            # Obtendo informações do Json de configuração
-            banco_oriem = config['conexao_banco']['origem']
-            banco_destino = config['conexao_banco']['destino']  
-            arquivo_func = config['arquivo']['arquivoFunc']
-            arquivo_freq = config['arquivo']['arquivoFreqAfast']
-            arquivo_pagto_cabec = config['arquivo']['arquivoPagtoCabec']
-            arquivo_pagto_rubri = config['arquivo']['arquivoPagtoRubri']
-            
+        try:
+            #processa frequencias
+            extrator_freq_afast = ExtrairFreqAfast()
+            status = extrator_freq_afast.extrair_freq_afast(session, configuracoes['conexao_banco']['origem'], configuracoes['arquivo']['arquivoFreqAfast'], configuracoes['tabela']['freqAfast'], tenant_id, id_exec)    
 
-            tab_func = config['tabela']['func']
-            tab_freqAfast = config['tabela']['freqAfast']
-            tab_pagtoCabec = config['tabela']['pagtoCabec']
-            tab_pagtoRubri = config['tabela']['pagtoRubri']
+            if status == "SUCESSO":
+                #importa o arquivo de frequencias se sucesso
+                importador = Importador()
+                status = importador.importar_arquivo(configuracoes['conexao_banco']['destino'], configuracoes['arquivo']['arquivoFreqAfast'], configuracoes['tabela']['freqAfast'], tenant_id, session, id_exec)
 
-            try:
-                #########################################################################
-                ##################### PROCESSAMENTO DE FUNCIONARIOS #####################
-                #########################################################################
-                extrator_func = ExtrairFuncionarios()
-                status = extrator_func.extrair_funcionarios(banco_oriem, arquivo_func, tab_func, tenant_id)    
-
-                if status == "SUCESSO":
-                    importador = Importador()
-                    status = importador.importar_arquivo(banco_destino, arquivo_func, tab_func, tenant_id)
-
-            except Exception as exFunc:
-                print("Ocorreu um erro no processamento do ETL de Funcionários. Erro => :", exFunc)    
-            
-            try:
-                #########################################################################
-                #####################  PROCESSAMENTO DE FREQ AFAST  #####################
-                #########################################################################
-                extrator_freq_afast = ExtrairFreqAfast()
-                status = extrator_freq_afast.extrair_freq_afast(banco_oriem, arquivo_freq, tab_freqAfast, tenant_id)    
-
-                if status == "SUCESSO":
-                    importador = Importador()
-                    status = importador.importar_arquivo(banco_destino, arquivo_freq, tab_freqAfast, tenant_id)
-
-            except Exception as exFreq:
-                print("Ocorreu um erro no processamento do ETL de Frequencias Erro => :", exFreq)
+        except Exception as exFreq:
+            print("Ocorreu um erro no processamento do ETL de Frequencias Erro => :", exFreq)
 
     except Exception as e:
         print("Ocorreu um erro no processamento da execução da classe ProcessarETL. Erro => :", e)
-
-def main():
-    processarETL = ProcessarETL()
-
-if __name__ == "__main__":
-  #garante que o código seja executado apenas quando o script for executado diretamente e não importado como um módulo.
-  main()    
-            
