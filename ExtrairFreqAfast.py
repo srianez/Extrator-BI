@@ -8,7 +8,7 @@ from AuditoriaProcessos import AuditoriaProcessos
 
 class ExtrairFreqAfast:
     try:       
-        def extrair_freq_afast(self, session, banco_oriem, diretorio_arquivo_parquet, tab_freqAfast, tenant_id, id_exec):
+        def extrair_freq_afast(self, session, banco_oriem, diretorio_arquivo_parquet, tab_freqAfast, tenant_id, id_exec, logger):
             
             retorno = "ERRO"
             data_atual = datetime.datetime.now()
@@ -21,6 +21,7 @@ class ExtrairFreqAfast:
             # Executar a procedure
             print("    #### Inicio do processamento do ETL CARREGA_FREQ_AFAST." + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             auditoria.gera_log_detail(session, id_exec, "    #### Inicio do processamento dos dados de Frequência e Afastamentos. Início: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("O processo de carga dos dados de frequÊncias e afastamentos foi iniciado")
             cursor = session.connection().connection.cursor()
             params = {
                 'P_DATA': data_atual,
@@ -32,10 +33,12 @@ class ExtrairFreqAfast:
             session.close()
             print("        #### Término do processamento do ETL CARREGA_FREQ_AFAST." + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             auditoria.gera_log_detail(session, id_exec, "       #### Término do processamento dos dados de Frequência e Afastamentos em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("O processo de carga dos dados de frequÊncias e afastamentos foi concluído")
             # Consulta SQL para selecionar os dados da tabela, esses dados estarão contidos no arquivo parquet.
             
             print("    #### Inicio da geração do arquivo "+ tab_freqAfast +".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             auditoria.gera_log_detail(session, id_exec, "    #### Inicio da geração do arquivo "+ tab_freqAfast +".parquet | Processamento concluído em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("Inicio da geração do arquivo "+ tab_freqAfast +".parquet")
             condicao = f"tenantid = {tenant_id}"
             rows = f"SELECT * FROM {tab_freqAfast} WHERE {condicao}"
 
@@ -46,7 +49,8 @@ class ExtrairFreqAfast:
             df.to_parquet(diretorio_arquivo_parquet, index=False)
             print("        #### Término da geração do arquivo "+ tab_freqAfast +".parquet | Processo concluído em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             auditoria.gera_log_detail(session, id_exec, "        #### Término da geração do arquivo "+ tab_freqAfast +".parquet | Processo concluído em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            
+            logger.log_info("Término da geração do arquivo "+ tab_freqAfast +".parquet")
+
             retorno = "SUCESSO"
             return retorno
         

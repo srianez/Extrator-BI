@@ -1,3 +1,3 @@
-ExtractFuncionarios.spec
+*.spec
 .vscode/*
 __pycache__/*

@@ -25,8 +25,13 @@ class AuditoriaProcessos:
 
         def gera_log_detail(self, session, id_exec, texto):
             try:
-                session.execute(text("INSERT INTO LOG_DETAIL (ID_EXEC, TEXTO) VALUES (:id_exec, :texto)"),
-                                {"id_exec": id_exec, "texto": texto})
+                max_id = session.execute(text("SELECT MAX(ID) FROM LOG_DETAIL")).scalar()
+                if max_id is None:
+                    max_id = 1
+                else:
+                    max_id += 1                
+                session.execute(text("INSERT INTO LOG_DETAIL (ID, ID_EXEC, TEXTO) VALUES (:id, :id_exec, :texto)"),
+                                {"id": max_id, "id_exec": id_exec, "texto": texto})
                 session.commit()
             except Exception as e:
                 print("Ocorreu um erro no processamento da inserção do log detalhe. Erro:", e)

@@ -7,13 +7,14 @@ from AuditoriaProcessos import AuditoriaProcessos
 
 class Importador:
     try:
-        def importar_arquivo(self, banco_destino, diretorio_arquivo_parquet, tab, tenant_id, session, id_exec):
+        def importar_arquivo(self, banco_destino, diretorio_arquivo_parquet, tab, tenant_id, session, id_exec, logger):
             
             auditoria = AuditoriaProcessos()
 
             # Carregar os dados do arquivo Parquet em um DataFrame Pandas
             print("    #### Inicio da importacao do arquivo "+ tab + ".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             auditoria.gera_log_detail(session, id_exec, "    #### Inicio da importacao do arquivo "+ tab + ".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("Início da importacao do arquivo "+ tab + ".parquet")
             df_parquet = pd.read_parquet(diretorio_arquivo_parquet)
 
             #definindo a conexão que será criada conforme o banco de dados
@@ -28,6 +29,7 @@ class Importador:
 
             # deleta os registros existentes de um determinado inquilino
             auditoria.gera_log_detail(session, id_exec, "    #### Removendo dados da tabela "+ tab + " | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("Removendo dados antigos da tabela "+ tab)
             stmt = delete(tabela).where(tabela.c.tenantid == tenant_id)
             with engine.connect() as conn:
                 conn.execute(stmt)
@@ -35,6 +37,7 @@ class Importador:
             conn.close()   
             
             auditoria.gera_log_detail(session, id_exec, "        #### Remoção concluída em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("Remoção concluída")
 
             commit_frequency = 1000
             iteration_count = 0
@@ -42,6 +45,7 @@ class Importador:
             conn_insert = engine.connect()
 
             auditoria.gera_log_detail(session, id_exec, "    #### Carregando os dados da tabela "+ tab + ".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("Início da importação dos novos dados da tabela "+ tab + ".parquet")
             for index, row in df_parquet.iterrows():
                 conn_insert.execute(tabela.insert().values(**row))
                 iteration_count += 1
@@ -53,6 +57,7 @@ class Importador:
             
             auditoria.gera_log_detail(session, id_exec, "        #### Término da importacao do arquivo " + tab + ".parquet em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             print("        #### Término da importacao do arquivo " + tab + ".parquet em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("Término da importacao" + tab)
             return "SUCESSO"
             
 

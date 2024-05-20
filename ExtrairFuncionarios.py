@@ -6,10 +6,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from AuditoriaProcessos import AuditoriaProcessos
 
-
 class ExtrairFuncionarios:
+
     try:       
-        def extrair_funcionarios(self, session, banco_oriem, diretorio_arquivo_parquet, tab_func, tenant_id, id_exec):
+        def extrair_funcionarios(self, session, banco_oriem, diretorio_arquivo_parquet, tab_func, tenant_id, id_exec, logger):
             retorno = "ERRO"
             auditoria = AuditoriaProcessos()
             
@@ -32,17 +32,21 @@ class ExtrairFuncionarios:
             }
                       
             auditoria.gera_log_detail(session, id_exec, "    #### Processo de carga dos dados dos funcionáios foi iniciado em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
+            logger.log_info("O processo de carga dos dados dos funcionáios foi iniciado")
+            
             cursor.callproc("CARREGA_FUNCIONARIO", keywordParameters=params)
             
             cursor.close()
             session.close()
 
             auditoria.gera_log_detail(session, id_exec, "        #### Processo de carga dos dados dos funcionáios foi concluído em: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("O processo de carga dos dados dos funcionáios foi concluído")
 
             # Consulta SQL para selecionar os dados da tabela, esses dados estarão contidos no arquivo parquet.
             print("    #### Inicio da geração do arquivo "+ tab_func +".parquet | Inicio do processamento: ", datetime.datetime.now() )
-            auditoria.gera_log_detail(session, id_exec, "    #### Inicio da geração do arquivo "+ tab_func +".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            auditoria.gera_log_detail(session, id_exec, "Inicio da geração do arquivo "+ tab_func +".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            
+            logger.log_info("Inicio da geração do arquivo "+ tab_func +".parquet")
             condicao = f"tenantid = {tenant_id}"
             rows = f"SELECT * FROM {tab_func} WHERE {condicao}"
 
@@ -52,8 +56,9 @@ class ExtrairFuncionarios:
             # Salva o DataFrame como um arquivo Parquet
             df.to_parquet(diretorio_arquivo_parquet, index=False)
             print("        #### Término da geração do arquivo "+ tab_func +".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            auditoria.gera_log_detail(session, id_exec, "        #### Término da geração do arquivo "+ tab_func +".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            
+            auditoria.gera_log_detail(session, id_exec, "Término da geração do arquivo "+ tab_func +".parquet | Inicio do processamento: " + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            logger.log_info("Término da geração do arquivo "+ tab_func +".parquet")
+
             retorno = "SUCESSO"
             return retorno
     

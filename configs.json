@@ -10,9 +10,11 @@
 		"pagtoRubri": "qs_pagamento_rubricas"
 	},
 	"arquivo":{
-		"arquivoFunc": "D:/Techne/Extrator-BI/qs_funcionarios.parquet",
-		"arquivoFreqAfast": "D:/Techne/Extrator-BI/qs_freq_afast.parquet",
-		"arquivoPagtoCabec": "D:/Techne/Extrator-BI/qs_pagamento_cabec.parquet",
-		"arquivoPagtoRubri": "D:/Techne/Extrator-BI/qs_pagamento_rubricas.parquet"
+		"arquivoFunc": "D:/Techne/ETL/qs_funcionarios.parquet",
+		"arquivoFreqAfast": "D:/Techne/ETL/qs_freq_afast.parquet",
+		"arquivoPagtoCabec": "D:/Techne/ETL/qs_pagamento_cabec.parquet",
+		"arquivoPagtoRubri": "D:/Techne/ETL/qs_pagamento_rubricas.parquet",
+		"diretorioLogETL": "D:/Techne/ETL/",
+		"arquivoLogETL": "logETL.txt"
 	}	
 }
